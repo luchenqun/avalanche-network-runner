@@ -262,7 +262,7 @@ func newNetwork(
 	} else {
 		net.rootDir = dir
 	}
-
+	os.MkdirAll(dir, os.ModePerm)
 	for _, nodeConfig := range nodeConfigs {
 		if _, err := net.addNode(nodeConfig); err != nil {
 			if err := net.stop(context.Background()); err != nil {
@@ -312,7 +312,7 @@ func newDefaultNetwork(
 	nodeProcessCreator NodeProcessCreator,
 ) (network.Network, error) {
 	config := NewDefaultConfig(binaryPath)
-	return newNetwork(log, config, newAPIClientF, nodeProcessCreator, "")
+	return newNetwork(log, config, newAPIClientF, nodeProcessCreator, "./nodes")
 }
 
 // NewDefaultConfig creates a new default network config
@@ -774,6 +774,7 @@ func (ln *localNetwork) buildFlags(
 	if err != nil {
 		return nil, 0, 0, err
 	}
+	p2pPort = apiPort + 1
 
 	// Flags for AvalancheGo
 	flags := []string{
@@ -782,6 +783,7 @@ func (ln *localNetwork) buildFlags(
 		fmt.Sprintf("--%s=%s", config.LogsDirKey, logsDir),
 		fmt.Sprintf("--%s=%d", config.HTTPPortKey, apiPort),
 		fmt.Sprintf("--%s=%d", config.StakingPortKey, p2pPort),
+		//fmt.Sprintf("--%s=%d", config.HTTPHostKey, "0.0.0.0"),
 		fmt.Sprintf("--%s=%s", config.BootstrapIPsKey, ln.bootstraps.IPsArg()),
 		fmt.Sprintf("--%s=%s", config.BootstrapIDsKey, ln.bootstraps.IDsArg()),
 	}
